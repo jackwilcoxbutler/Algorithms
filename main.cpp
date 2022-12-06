@@ -1,6 +1,7 @@
 #include <iostream>
 #include <bits/stdc++.h>
 #include <queue>
+#include <vector>
 #define INF 999
 #define numPts 4
 
@@ -140,8 +141,8 @@ void KnapsackBT(int i, int profit, int weight, const struct Item z[],int capacit
     if(weight <= capacity && profit > maxprofit){
         maxprofit = profit;
         numbest = i;
-        for(int temp = 0; temp < numbest; temp++){
-            bestset[i] = include[i];
+        for(int temp = 0; temp <= numbest; temp++){
+            bestset[temp] = include[temp];
         }
     }
     //cout << weight << "  " << profit <<endl; 
@@ -180,9 +181,86 @@ bool promising(int index,int weight, int profit, const struct Item z[], int capa
     }
 
 }
+struct node2{
+public:
+    int level; //nodes level in the tree
+    int profit;
+    int weight;
+    float bound;
+    int height;
+    vector<Item> z;
 
-int KnapsackBB(int &best){
-return 0;}
+};
+class ComparisonClass {
+public:
+    bool operator() (node2 one, node2 two) {
+        return one.bound < two.bound;
+    }
+};
+//global Variables for Branch and Bound
+int bbMaxPofit, bbCapacity, bbLength; 
+float bbBound(node2 v, const struct Item z[]){
+    int j,k;
+    int totweight;
+    float bound;
+
+    j = v.level + 1;
+    bound = v.profit;
+    totweight = v.weight;
+    while( j <= bbLength && (totweight + z[j].weight) <= bbCapacity){
+        totweight = totweight + z[j].weight;
+        bound = bound + z[j].profit;
+        j++;
+    }
+    if(j<=bbLength){
+        bound = bound + (bbCapacity - totweight) * (z[j].profit/z[j].weight);
+    }
+    return bound;
+};
+void KnapsackBB(int n, const struct Item z[], int maxWeight){
+    bbLength = n;
+    priority_queue<node2, vector<node2>, ComparisonClass> q;
+    while(!q.empty())
+        q.pop();
+    node2 u,v;
+
+    v.level = -1; v.profit = 0; v.weight = 0;
+    bbMaxPofit = 0;
+    v.bound = bbBound(v, z);
+    //cout << "V bound: " << v.bound << endl;
+    q.push(v);
+    while(!q.empty()){
+        v = q.top();
+        q.pop();
+        
+        if (v.bound>bbMaxPofit){
+            //cout << "Node: Level: " << v.level << endl;
+            //cout << "\t Profit: " << v.profit << endl;
+            //cout << "\t Weight: " << v.weight << endl;
+            //cout << "\t Bound: " << v.bound << endl;
+            u.level = v.level + 1;
+            //cout << "U level: " << u.level << endl;
+            u.weight = v.weight + z[u.level].weight;
+            //cout << "U weight: " << u.weight << endl;
+            u.profit = v.profit + z[u.level].profit;
+            //cout << "U profit: " << u.profit << endl;
+
+            if (u.weight <= maxWeight && u.profit > bbMaxPofit){
+                bbMaxPofit = u.profit;
+                //cout << "new MP: " << bbMaxPofit << endl;
+            }
+                
+            u.bound = bbBound(u, z);
+            if(u.bound > bbMaxPofit && u.level < bbLength)
+                q.push(u);
+            u.weight = v.weight;
+            u.profit = v.profit;
+            u.bound = bbBound(u, z);
+            if (u.bound > bbMaxPofit && u.level < bbLength)
+                q.push(u);
+        }
+    }
+};
 
 int main(int argc, char *argv[]){
     Item num33[] = {{20,2},{25,5},{35,7},{12,3},{3,1}};
@@ -210,7 +288,7 @@ int main(int argc, char *argv[]){
     //Test Knapsack backtrack with #33 from exercise 5
     numbest = 0;
     //resetTrackers();
-    KnapsackBT(0,0,0,num33,9);
+    KnapsackBT(-1,0,0,num33,9);
     cout << " BackTracking #33 : " << maxprofit << " using items : ";
     for(int k=0;k <= numbest; k++){
         if(bestset[k] == "yes"){
@@ -221,7 +299,7 @@ int main(int argc, char *argv[]){
     //Test Knapsack backtrack with #1 from exercise 5
     resetTrackers();
     numbest = 0;
-    KnapsackBT(0,0,0,num5,13);
+    KnapsackBT(-1,0,0,num5,13);
     cout << " BackTracking #5 : " << maxprofit << " using items : ";
     for(int k=0;k <= numbest; k++){
         if(bestset[k] == "yes"){
@@ -229,6 +307,10 @@ int main(int argc, char *argv[]){
         }
     }cout << endl;
 
+    KnapsackBB(5,num33, cap33);
+    cout << " BB #33 : " << bbMaxPofit << endl;
+    KnapsackBB(5,num5, cap5);
+    cout << " BB #5 : " << bbMaxPofit << endl;
     return 0;
 }
 
