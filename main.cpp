@@ -3,7 +3,7 @@
 #include <queue>
 #include <vector>
 #define INF 999
-#define numPts 4
+#define numPts 5
 
 
 using namespace std;
@@ -15,18 +15,6 @@ struct Item{
 
     Item(int p, int w) : profit(p), weight(w)
     {used = false;}
-};
-
-struct node {
-    int level;
-    int profit;
-    int weight;
-    float bound;
-    vector <int> k;
-    
-    bool operator<(const node &rhs) const{
-        return (bound < rhs.bound);
-    }
 };
 
 bool cmp(struct Item a, struct Item b)
@@ -268,12 +256,20 @@ int main(int argc, char *argv[]){
     Item num5[] = {{20,2},{30,5},{35,7},{12,3},{3,1}};
     int cap5 = 13;
 
-    int graph[4][4] = {{0, 3, INF, 5},
-             {2, 0, INF, 4},
-             {INF, 1, 0, INF},
-             {INF, INF, 2, 0}};
-    cout << "Floyd's : " << endl;
-    floyd(graph); cout << endl << endl;
+    int inClass[5][5] = {{0, 1, 3, INF, INF},
+             {2, 0, 1, INF,1},
+             {INF, INF, 0, 2,3},
+             {INF, INF, 1, 0, INF},
+             {1,3,INF,6,0}};
+    int example2[5][5] = {{0,3,8,INF,-4},
+                        {INF, 0, INF, 1, 7},
+                        {INF, 4,0,INF,INF},
+                        {2,INF,-5,0,INF},
+                        {INF,INF,INF,6,0}};
+    cout << "Floyd's example 1: " << endl;
+    floyd(inClass); cout << endl;
+    cout << "Floyd's example 2: " << endl;
+    floyd(example2); cout << endl << endl;
 
     cout << "KNAPSACK : " << endl;
     cout << " No fractions #33: " << greedyNoFrac(num33, cap33, 5) << endl;
@@ -308,9 +304,9 @@ int main(int argc, char *argv[]){
     }cout << endl;
 
     KnapsackBB(5,num33, cap33);
-    cout << " BB #33 : " << bbMaxPofit << endl;
+    cout << " BFS Branch and Bound #33 : " << bbMaxPofit << endl;
     KnapsackBB(5,num5, cap5);
-    cout << " BB #5 : " << bbMaxPofit << endl;
+    cout << " BFS Branch and Bound #5 : " << bbMaxPofit << endl;
     return 0;
 }
 
